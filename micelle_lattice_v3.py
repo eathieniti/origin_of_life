@@ -2,16 +2,24 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-lattice = np.zeros((40, 40, 100000))
+from pylab import *
+
+steps = 100000
+x_size = 400
+y_size = 400
+N = 300
+
+lattice = np.zeros((x_size, y_size, steps))
 T = .1
 
-for i in range(300):
-    lattice[np.random.randint(1, 39), np.random.randint(1, 39), 0] = np.random.randint(1, 5)
+for i in range(N):
+    lattice[np.random.randint(1, x_size-1), np.random.randint(1,y_size-1), 0] = np.random.randint(1, 5)
+
 
 def energy_f(lat, x, y):
-    if lat[x, y] == 0:
+    if lat[x, y] == 0:         # site not occupied
         a, b = 0, 0
-    elif lat[x, y] == 1:
+    elif lat[x, y] == 1:       # if occupied and 1
         if lat[x+1, y] == 2 or lat[x+1, y] == 4:
             a = -1.
         elif lat[x+1, y] == 0:
@@ -65,6 +73,8 @@ def energy_f(lat, x, y):
             b = 1.
     return a + b
 
+
+
 def energy_f2(lat):
     H_lat = (-1. * np.logical_or(
                      np.logical_and(np.logical_or(lat[1:39, 1:39] == 1, lat[1:39, 1:39] == 3), np.logical_or(lat[2:40, 1:39] == 2, lat[2:40, 1:39] == 4)), 
@@ -84,32 +94,40 @@ def energy_f2(lat):
                   ))
     return np.sum(H_lat)
 
+
+
+
+# calculate the energy for the whole lattice in parallel
 def energy_f3(lat):
     H_lat = (-1. * (
-                     ((lat[1:39, 1:39]==1) + (lat[1:39, 1:39]==3))*((lat[2:40, 1:39]==2) + (lat[2:40, 1:39]==4)) + 
-                     ((lat[1:39, 1:39]==2) + (lat[1:39, 1:39]==4))*((lat[0:38, 1:39]==1) + (lat[0:38, 1:39]==3))
+                     ((lat[1:x_size-1, 1:y_size-1]==1) + (lat[1:x_size-1, 1:y_size-1]==3))*((lat[2:x_size, 1:y_size-1]==2) + (lat[2:x_size, 1:x_size-1]==4)) +
+                     ((lat[1:x_size-1, 1:y_size-1]==2) + (lat[1:x_size-1, 1:y_size-1]==4))*((lat[0:x_size-2, 1:y_size-1]==1) + (lat[0:x_size-2, 1:x_size-1]==3))
                    ) +
              1. * (
-                     ((lat[1:39, 1:39]==1) + (lat[1:39, 1:39]==3))*((lat[2:40, 1:39]==1) + (lat[2:40, 1:39]==3)) + 
-                     ((lat[1:39, 1:39]==2) + (lat[1:39, 1:39]==4))*((lat[0:38, 1:39]==2) + (lat[0:38, 1:39]==4))
+                     ((lat[1:x_size-1, 1:y_size-1]==1) + (lat[1:x_size-1, 1:y_size-1]==3))*((lat[2:x_size,   1:y_size-1]==1) + (lat[2:x_size, 1:x_size-1]==3)) +
+                     ((lat[1:x_size-1, 1:y_size-1]==2) + (lat[1:x_size-1, 1:y_size-1]==4))*((lat[0:x_size-2, 1:y_size-1]==2) + (lat[0:x_size-2, 1:x_size-1]==4))
                   ) + 
              -1. * (
-                     ((lat[1:39, 1:39]==1) + (lat[1:39, 1:39]==2))*((lat[1:39, 0:38]==3) + (lat[1:39, 0:38]==4)) +
-                     ((lat[1:39, 1:39]==3) + (lat[1:39, 1:39]==4))*((lat[1:39, 2:40]==1) + (lat[1:39, 2:40]==2))
+                     ((lat[1:x_size-1, 1:y_size-1]==1) + (lat[1:x_size-1, 1:y_size-1]==2))*((lat[1:x_size-1, 0:y_size-2]==3) + (lat[1:x_size-1, 0:x_size-2]==4)) +
+                     ((lat[1:x_size-1, 1:y_size-1]==3) + (lat[1:x_size-1, 1:y_size-1]==4))*((lat[1:x_size-1, 2:y_size]==1) + (lat[1:x_size-1, 2:x_size]==2))
                    ) + 
              1. * (
-                     ((lat[1:39, 1:39]==1) + (lat[1:39, 1:39]==2))*((lat[1:39, 0:38]==1) + (lat[1:39, 0:38]==2)) +
-                     ((lat[1:39, 1:39]==3) + (lat[1:39, 1:39]==4))*((lat[1:39, 2:40]==3) + (lat[1:39, 2:40]==4))
+                     ((lat[1:x_size-1, 1:y_size-1]==1) + (lat[1:x_size-1, 1:y_size-1]==2))*((lat[1:x_size-1, 0:y_size-2]==1) + (lat[1:x_size-1, 0:x_size-2]==2)) +
+                     ((lat[1:x_size-1, 1:y_size-1]==3) + (lat[1:x_size-1, 1:y_size-1]==4))*((lat[1:x_size-1, 2:y_size]==3) + (lat[1:x_size-1, 2:x_size]==4))
                   ))
     return np.sum(H_lat)
+
+
 
 energy = np.zeros(100000)
 energy[0] = energy_f3(lattice[:, :, 0])
 
+
+# n: simulation step
 for n in range(1, 100000):
     lattice[:, :, n] = lattice[:, :, n-1]
     while True:
-        i, j = np.random.randint(1, 39), np.random.randint(1, 39)
+        i, j = np.random.randint(1, x_size-1), np.random.randint(1, y_size-1)
         if lattice[i, j, n] != 0:
             break
     if np.random.random() < 0.5:
@@ -117,7 +135,7 @@ for n in range(1, 100000):
     else:
         while True:
             di, dj = np.random.randint(-1, 2), np.random.randint(-1, 2)
-            if 0 < i+di < 39 and 0 < j+dj < 39:
+            if 0 < i+di < x_size-1 and 0 < j+dj < y_size-1:
                 break
         lattice[i, j, n], lattice[i+di, j+dj, n] = lattice[i+di, j+dj, n-1], lattice[i, j, n-1]
     energy[n] = energy_f3(lattice[:, :, n])
@@ -126,13 +144,13 @@ for n in range(1, 100000):
 	    energy[n] = energy[n-1]
 	    
 
-print "simulation done"
-print sum(energy_f(lattice[:, :, -1], x, y) for x in range(1, 39) for y in range(1, 39))
-print energy_f2(lattice[:, :, -1])
-print energy_f3(lattice[:, :, -1])
+print("simulation done")
+print(sum(energy_f(lattice[:, :, -1], x, y) for x in range(1, x_size-1) for y in range(1, y_size-1)))
+print(energy_f2(lattice[:, :, -1]))
+print(energy_f3(lattice[:, :, -1]))
 
 plt.figure(0, figsize=(6,6))
-lns = plt.plot(np.arange(100000), energy, "-")
+lns = plt.plot(np.arange(steps), energy, "-")
 plt.xlabel("t")
 plt.ylabel("H")
 plt.savefig('energy_plot.png')
@@ -142,7 +160,7 @@ plt.close(0)
 for n in range(1000):  
     plt.figure(n + 2, figsize=(6,6))
     lns = plt.plot()
-    plt.axis([0, 41, 0, 41])
+    plt.axis([0, x_size+1, 0, y_size+1])
     plt.title("t=%05d" % (n*100))
     for i in range(40):
         for j in range(40):
@@ -157,3 +175,7 @@ for n in range(1000):
     plt.savefig('lattice_plots/lattice_%03d.png' % n)
     plt.close(n)
 
+
+
+
+np.save('lattice', lattice)
