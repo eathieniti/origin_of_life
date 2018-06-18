@@ -2,13 +2,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from utils import calculate_sizes
 from pylab import *
 
 steps = 100000
-x_size = 400
-y_size = 400
-N = 300
+x_size = 150
+y_size = 150
+N = 1000
 
+
+y
 lattice = np.zeros((x_size, y_size, steps))
 T = .1
 
@@ -80,7 +83,7 @@ def energy_f2(lat):
                      np.logical_and(np.logical_or(lat[1:39, 1:39] == 1, lat[1:39, 1:39] == 3), np.logical_or(lat[2:40, 1:39] == 2, lat[2:40, 1:39] == 4)), 
                      np.logical_and(np.logical_or(lat[1:39, 1:39] == 2, lat[1:39, 1:39] == 4), np.logical_or(lat[0:38, 1:39] == 1, lat[0:38, 1:39] == 3))
                    ) +
-             1. * np.logical_or(
+             1. * np.logical_or(   ml
                      np.logical_and(np.logical_or(lat[1:39, 1:39] == 1, lat[1:39, 1:39] == 3), np.logical_or(lat[2:40, 1:39] == 1, lat[2:40, 1:39] == 3)), 
                      np.logical_and(np.logical_or(lat[1:39, 1:39] == 2, lat[1:39, 1:39] == 4), np.logical_or(lat[0:38, 1:39] == 2, lat[0:38, 1:39] == 4))
                   ) + 
@@ -162,8 +165,8 @@ for n in range(1000):
     lns = plt.plot()
     plt.axis([0, x_size+1, 0, y_size+1])
     plt.title("t=%05d" % (n*100))
-    for i in range(40):
-        for j in range(40):
+    for i in range(x_size):
+        for j in range(y_size):
             if lattice[i, j, n*100] == 1:
                 plt.arrow(i, j+1, 0.8, -0.8, length_includes_head=True, head_width=0.3)
             elif lattice[i, j, n*100] == 2:
@@ -178,4 +181,7 @@ for n in range(1000):
 
 
 
-np.save('lattice', lattice)
+np.save('lattice_%s_x_%s_y_%s'%(steps,x_size,y_size), lattice[:,:,-1])
+fname = 'lattice_%s_x_%s_y_%s'%(steps,x_size,y_size)
+
+calculate_sizes(lattice, fname)
