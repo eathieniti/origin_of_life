@@ -41,7 +41,7 @@ energy[0] = energy_f(lattice[:, :, 0])
 for n in range(1, timesteps):
     lattice[:, :, n] = lattice[:, :, n-1]
     while True:
-        i, j = np.random.randint(1, 39), np.random.randint(1, 39)
+        i, j = np.random.randint(1, N-1), np.random.randint(1, N-1)
         if lattice[i, j, n] != -1.:
             break
     if np.random.random() < 0.5:
@@ -49,7 +49,7 @@ for n in range(1, timesteps):
     else:
         while True:
             di, dj = np.random.randint(-1, 2), np.random.randint(-1, 2)
-            if 0 < i+di < 39 and 0 < j+dj < 39:
+            if 0 < i+di < N-1 and 0 < j+dj < N-1:
                 break
         lattice[i, j, n], lattice[i+di, j+dj, n] = lattice[i+di, j+dj, n-1], lattice[i, j, n-1]
     energy[n] = energy_f(lattice[:, :, n])
