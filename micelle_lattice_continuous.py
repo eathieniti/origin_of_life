@@ -98,8 +98,8 @@ ax2.set_ylabel('temperature', color=color)  # we already handled the x-label wit
 ax2.plot(np.arange(timesteps), T, color=color)
 ax2.tick_params(axis='y', labelcolor=color)
 
-if not os.path.exists('lattice_plots_%s_%s_%s_%s_%s'):
-    os.makedirs('lattice_plots_%s_%s_%s_%s_%s')
+if not os.path.exists('lattice_plots_%s_%s_%s_%s_%s'%(N,N_lipids, timesteps, density, T_decrease)):
+    os.makedirs('lattice_plots_%s_%s_%s_%s_%s'%(N,N_lipids, timesteps, density, T_decrease))
 
 fig.tight_layout()  # otherwise the right y-label is slightly clipped
 plt.savefig('lattice_plots_%s_%s_%s_%s_%s/energy_plot.png'%(N,N_lipids, timesteps, density, T_decrease))

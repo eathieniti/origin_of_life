@@ -11,7 +11,7 @@ def calculate_sizes(lattice, fname):
     # Calculate degree distribution for the final configuration
     #
 
-    final_lattice = lattice[:,:,-1]
+    final_lattice = lattice
     #print(final_lattice)
 
     final_lattice[final_lattice!=-1]=1
@@ -29,7 +29,7 @@ def calculate_sizes(lattice, fname):
     print("average object size = ", average_object_size)
     print("median object size = ", median_object_size)
 
-    plt.savefig('lattice_plots/%s.png'%fname)
+    plt.savefig('%s.png'%fname)
 
 #lattice = np.load('lattice_100000_x_100_y_100.npy')
 
