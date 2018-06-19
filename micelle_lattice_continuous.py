@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-timesteps = 100000
+timesteps = 1000000
 N = 50
 
 lattice = np.ones((N, N, timesteps)) * -1.
@@ -16,22 +16,15 @@ for i in range(800):
 
 
 def energy_f(lat):
-    H_lat = (lat[1:N-1, 1:N-1] != -1.) * ((lat[0:N-2, 1:N-1] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[0:N-2, 1:N-1])) + 
-                                          (lat[2:N, 1:N-1] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[2:N, 1:N-1])) + 
-                                          (lat[1:N-1, 0:N-2] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[1:N-1, 0:N-2])) + 
-                                          (lat[1:N-1, 2:N] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[1:N-1, 2:N])) + 
-                                          (lat[0:N-2, 0:N-2] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[0:N-2, 0:N-2])) + 
-                                          (lat[2:N, 2:N] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[2:N, 2:N])) + 
-                                          (lat[2:N, 0:N-2] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[2:N, 0:N-2])) + 
-                                          (lat[0:N-2, 2:N] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[0:N-2, 2:N])) +
-                                          (lat[0:N-2, 1:N-1] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - np.pi)) + 
-                                          (lat[2:N, 1:N-1] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 2*np.pi)) + 
-                                          (lat[1:N-1, 0:N-2] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 1.5*np.pi)) + 
-                                          (lat[1:N-1, 2:N] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 0.5*np.pi)) + 
-                                          (lat[0:N-2, 0:N-2] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 1.25*np.pi)) + 
-                                          (lat[2:N, 2:N] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 0.25*np.pi)) + 
-                                          (lat[2:N, 0:N-2] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 1.75*np.pi)) + 
-                                          (lat[0:N-2, 2:N] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 0.75*np.pi)))
+    H_lat = (lat[1:N-1, 1:N-1] != -1.) * ((lat[0:N-2, 1:N-1] != -1.) * np.cos(lat[1:N-1, 1:N-1] - lat[0:N-2, 1:N-1]) * np.cos(2*lat[0:N-2, 1:N-1]) + 
+                                          (lat[2:N, 1:N-1] != -1.) * np.cos(lat[1:N-1, 1:N-1] - lat[2:N, 1:N-1]) * np.cos(2*lat[2:N, 1:N-1]) + 
+                                          (lat[1:N-1, 0:N-2] != -1.) * np.cos(lat[1:N-1, 1:N-1] - lat[1:N-1, 0:N-2]) * -np.cos(2*lat[1:N-1, 0:N-2]) + 
+                                          (lat[1:N-1, 2:N] != -1.) * np.cos(lat[1:N-1, 1:N-1] - lat[1:N-1, 2:N]) * -np.cos(2*lat[1:N-1, 2:N]) +
+                                          (lat[0:N-2, 1:N-1] == -1.) * np.cos(lat[1:N-1, 1:N-1] - np.pi) + 
+                                          (lat[2:N, 1:N-1] == -1.) * np.cos(lat[1:N-1, 1:N-1] - 2*np.pi) + 
+                                          (lat[1:N-1, 0:N-2] == -1.) * np.cos(lat[1:N-1, 1:N-1] - 1.5*np.pi) + 
+                                          (lat[1:N-1, 2:N] == -1.) * np.cos(lat[1:N-1, 1:N-1] - 0.5*np.pi)
+                                         )
     return np.sum(H_lat)
 
 
