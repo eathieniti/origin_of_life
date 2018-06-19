@@ -31,18 +31,18 @@ def energy_f(lat):
                                           (lat[2:N, 1:N-1] != -1.) * np.cos(lat[1:N-1, 1:N-1] - lat[2:N, 1:N-1]) * np.cos(2*lat[2:N, 1:N-1]) + 
                                           (lat[1:N-1, 0:N-2] != -1.) * np.cos(lat[1:N-1, 1:N-1] - lat[1:N-1, 0:N-2]) * -np.cos(2*lat[1:N-1, 0:N-2]) + 
                                           (lat[1:N-1, 2:N] != -1.) * np.cos(lat[1:N-1, 1:N-1] - lat[1:N-1, 2:N]) * -np.cos(2*lat[1:N-1, 2:N]) +
-                                          (lat[0:N-2, 0:N-2] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[0:N-2, 0:N-2])) * np.cos(2*(lat[0:N-2, 0:N-2] - 0.25*np.pi)) + 
-                                          (lat[2:N, 2:N] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[2:N, 2:N])) * np.cos(2*(lat[2:N, 2:N] - 0.25*np.pi)) + 
-                                          (lat[2:N, 0:N-2] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[2:N, 0:N-2])) * np.cos(2*(lat[2:N, 0:N-2] - 0.75*np.pi)) + 
-                                          (lat[0:N-2, 2:N] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[0:N-2, 2:N])) * np.cos(2*(lat[2:N, 0:N-2] - 0.75*np.pi)) +
+                                          (lat[0:N-2, 0:N-2] != -1.)*np.cos(lat[1:N-1, 1:N-1] - lat[0:N-2, 0:N-2]) * np.cos(2*(lat[0:N-2, 0:N-2] - 0.25*np.pi)) + 
+                                          (lat[2:N, 2:N] != -1.)*np.cos(lat[1:N-1, 1:N-1] - lat[2:N, 2:N]) * np.cos(2*(lat[2:N, 2:N] - 0.25*np.pi)) + 
+                                          (lat[2:N, 0:N-2] != -1.)*np.cos(lat[1:N-1, 1:N-1] - lat[2:N, 0:N-2]) * np.cos(2*(lat[2:N, 0:N-2] - 0.75*np.pi)) + 
+                                          (lat[0:N-2, 2:N] != -1.)*np.cos(lat[1:N-1, 1:N-1] - lat[0:N-2, 2:N]) * np.cos(2*(lat[2:N, 0:N-2] - 0.75*np.pi)) +
                                           (lat[0:N-2, 1:N-1] == -1.) * np.cos(lat[1:N-1, 1:N-1] - np.pi) + 
                                           (lat[2:N, 1:N-1] == -1.) * np.cos(lat[1:N-1, 1:N-1] - 2*np.pi) + 
                                           (lat[1:N-1, 0:N-2] == -1.) * np.cos(lat[1:N-1, 1:N-1] - 1.5*np.pi) + 
-                                          (lat[1:N-1, 2:N] == -1.) * np.cos(lat[1:N-1, 1:N-1] - 0.5*np.pi) 
-                                          (lat[0:N-2, 0:N-2] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 1.25*np.pi)) + 
-                                          (lat[2:N, 2:N] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 0.25*np.pi)) + 
-                                          (lat[2:N, 0:N-2] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 1.75*np.pi)) + 
-                                          (lat[0:N-2, 2:N] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 0.75*np.pi))
+                                          (lat[1:N-1, 2:N] == -1.) * np.cos(lat[1:N-1, 1:N-1] - 0.5*np.pi) +
+                                          (lat[0:N-2, 0:N-2] == -1.)*np.cos(lat[1:N-1, 1:N-1] - 1.25*np.pi) + 
+                                          (lat[2:N, 2:N] == -1.)*np.cos(lat[1:N-1, 1:N-1] - 0.25*np.pi) + 
+                                          (lat[2:N, 0:N-2] == -1.)*np.cos(lat[1:N-1, 1:N-1] - 1.75*np.pi) + 
+                                          (lat[0:N-2, 2:N] == -1.)*np.cos(lat[1:N-1, 1:N-1] - 0.75*np.pi)
                                          )
     return np.sum(H_lat)
 
@@ -66,7 +66,7 @@ for n in range(1, timesteps):
         lattice[i, j, n], lattice[i+di, j+dj, n] = lattice[i+di, j+dj, n-1], lattice[i, j, n-1]
     energy[n] = energy_f(lattice[:, :, n])
     if T_decrease == 'linear':
-        T[n] = T[n-1] - T_init/(timesteps*1000)
+        T[n] = T[n-1] - T_init/(timesteps)
     if np.random.random() >= np.e**((energy[n-1] - energy[n])/T[n]): # rejecting change
 	    lattice[:, :, n] = lattice[:, :, n-1]
 	    energy[n] = energy[n-1]
