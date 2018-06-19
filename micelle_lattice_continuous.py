@@ -2,16 +2,26 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from utils import calculate_sizes
+
+save_plots = True
+
 timesteps = 100000
-N = 50
+N = 100
+N_lipids = 700
 
 lattice = np.ones((N, N, timesteps)) * -1.
 
 T = np.zeros(timesteps)
 T_init = 1.
 T[0] = T_init
+T_decrease = 'linear'
 
-for i in range(800):
+density = float(N_lipids)/(N*N)
+print("timesteps: ", timesteps, "N: ", N, "N_lipids: ",N_lipids)
+print("density: ", density )
+
+for i in range(N_lipids):
     lattice[np.random.randint(1, N-1), np.random.randint(1, N-1), 0] = np.random.random() * 2 * np.pi
 
 
@@ -53,20 +63,22 @@ for n in range(1, timesteps):
                 break
         lattice[i, j, n], lattice[i+di, j+dj, n] = lattice[i+di, j+dj, n-1], lattice[i, j, n-1]
     energy[n] = energy_f(lattice[:, :, n])
-    T[n] = T[n-1] - T_init/timesteps
+    if T_decrease == 'linear':
+        T[n] = T[n-1] - T_init/(timesteps*1000)
     if np.random.random() >= np.e**((energy[n-1] - energy[n])/T[n]): # rejecting change
 	    lattice[:, :, n] = lattice[:, :, n-1]
 	    energy[n] = energy[n-1]
-	    
 
-print "simulation done"
-print energy_f(lattice[:, :, -1])
+
+
+print("simulation done")
+print(energy_f(lattice[:, :, -1]))
 
 # plt.figure(0, figsize=(6,6))
 # lns = plt.plot(np.arange(timesteps), energy, "-")
 # plt.xlabel("t")
 # plt.ylabel("H")
-# plt.savefig('energy_plot.png')
+# plt.savefig('energy_plot%s_%s_%s.png'%(N,N_lipids, timesteps))
 # plt.close(0)
 
 fig, ax1 = plt.subplots()
@@ -84,19 +96,33 @@ ax2.plot(np.arange(timesteps), T, color=color)
 ax2.tick_params(axis='y', labelcolor=color)
 
 fig.tight_layout()  # otherwise the right y-label is slightly clipped
-plt.savefig('energy_plot.png')
+plt.savefig('lattice_plots_%s_%s_%s_%s_%s/energy_plot.png'%(N,N_lipids, timesteps, density, T_decrease))
 
-scale = timesteps/1000
-for n in range(1000):  
-    plt.figure(n + 2, figsize=(6,6))
-    lns = plt.plot()
-    plt.axis([0, N+1, 0, N+1])
-    plt.title("t=%d" % (n*scale))
-    for i in range(N):
-        for j in range(N):
-            if lattice[i, j, n*scale] != -1.:
-                x, y = np.cos(lattice[i, j, n*scale]), np.sin(lattice[i, j, n*scale])
-                plt.arrow(i+0.5 - x*0.5, j+0.5 - y*0.5, x, y, length_includes_head=True, head_width=0.3)
-    plt.savefig('lattice_plots/lattice_%03d.png' % n)
-    plt.close(n)
+#
+# Calculate object size distribution
+#
+lattice_snapshot = lattice[:,:,-1]
+fname = "lattice_plots_%s_%s_%s_%s_%s/final_hist"%(N,N_lipids, timesteps,density,T_decrease)
+calculate_sizes(lattice_snapshot, fname)
 
+lattice_snapshot = lattice[:,:,1]
+fname = "lattice_plots_%s_%s_%s_%s_%s/inital_hist"%(N,N_lipids, timesteps,density,T_decrease)
+calculate_sizes(lattice_snapshot, fname)
+
+if save_plots:
+    scale = timesteps/1000
+    for n in range(1000):
+        plt.figure(n + 2, figsize=(6,6))
+        lns = plt.plot()
+        plt.axis([0, N+1, 0, N+1])
+        plt.title("t=%d" % (n*scale))
+        for i in range(N):
+            for j in range(N):
+                if lattice[i, j, n*scale] != -1.:
+                    x, y = np.cos(lattice[i, j, n*scale]), np.sin(lattice[i, j, n*scale])
+                    plt.arrow(i+0.5 - x*0.5, j+0.5 - y*0.5, x, y, length_includes_head=True, head_width=0.3)
+        plt.savefig('lattice_plots_%s_%s_%s_%s_%s/lattice_%03d.png'%(N,N_lipids, timesteps,density,T_decrease,n))
+        plt.close(n)
+
+
+np.save("lattice_plots_%s_%s_%s_%s_%s/final_lattice"%(N,N_lipids, timesteps,density,T_decrease),lattice[:,:,-1])

@@ -6,22 +6,31 @@ from scipy.ndimage import measurements
 
 
 
-def calculate_sizes(lattice):
+def calculate_sizes(lattice, fname):
     #
     # Calculate degree distribution for the final configuration
-    # 
+    #
+
+    final_lattice = lattice[:,:,-1]
+    #print(final_lattice)
+
+    final_lattice[final_lattice!=-1]=1
+    final_lattice[final_lattice==-1]=0
+    lw, num = measurements.label(final_lattice)
+
+
     plt.figure()
     lns = plt.plot()
     plt.title("size distribution")
-
-
-    final_lattice = lattice[:,:,-1]
-    final_lattice[nonzero(final_lattice)]=1
-    lw, num = measurements.label(final_lattice)
     area = measurements.sum(final_lattice, lw, index=arange(lw.max() + 1))
     plt.hist(area, bins=100)
+    average_object_size = np.mean(area)
+    median_object_size = np.median(area)
+    print("average object size = ", average_object_size)
+    print("median object size = ", median_object_size)
 
-    plt.savefig('lattice_plots/hist.png')
+    plt.savefig('lattice_plots/%s.png'%fname)
 
-lattice = np.load('lattice.npy')
-calculate_sizes(lattice)
+#lattice = np.load('lattice_100000_x_100_y_100.npy')
+
+#calculate_sizes(lattice)
