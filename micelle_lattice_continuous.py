@@ -9,7 +9,7 @@ save_plots = True
 
 timesteps = 100000
 N = 100
-N_lipids = 700
+N_lipids = 3000
 
 
 lattice = np.ones((N, N, timesteps)) * -1.
