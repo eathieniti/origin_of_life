@@ -68,6 +68,7 @@ for n in range(1, timesteps):
         lattice[i, j, n], lattice[i+di, j+dj, n] = lattice[i+di, j+dj, n-1], lattice[i, j, n-1]
     energy[n] = energy_f(lattice[:, :, n])
     T[n] = T[n-1] #- 1./timesteps
+#    print (energy[n-1] - energy[n])/T[n]
     if np.random.random() >= np.e**((energy[n-1] - energy[n])/T[n]): # rejecting change
 	    lattice[:, :, n] = lattice[:, :, n-1]
 	    energy[n] = energy[n-1]
