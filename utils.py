@@ -46,8 +46,6 @@ def calculate_sizes(lattice_snapshot, fname, loglog=None):
     # Calculate degree distribution for the final configuration
     #
 
-
-    #print(final_lattice)
     ls = lattice_snapshot.copy()
     ls[ls!=-1]=1
     ls[ls==-1]=0
@@ -70,7 +68,6 @@ def calculate_sizes(lattice_snapshot, fname, loglog=None):
 
 
     plt.savefig(fname)
-
 
 #lattice = np.load('lattice_100000_x_100_y_100.npy')
 

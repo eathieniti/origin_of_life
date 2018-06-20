@@ -1,3 +1,4 @@
+import os
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,8 +8,9 @@ from utils import calculate_sizes
 save_plots = True
 
 timesteps = 100000
-N = 100
-N_lipids = 700
+N = 40
+N_lipids = 500
+
 
 lattice = np.ones((N, N, timesteps)) * -1.
 
@@ -24,25 +26,27 @@ print("density: ", density )
 for i in range(N_lipids):
     lattice[np.random.randint(1, N-1), np.random.randint(1, N-1), 0] = np.random.random() * 2 * np.pi
 
-
 def energy_f(lat):
-    H_lat = (lat[1:N-1, 1:N-1] != -1.) * ((lat[0:N-2, 1:N-1] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[0:N-2, 1:N-1])) + 
-                                          (lat[2:N, 1:N-1] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[2:N, 1:N-1])) + 
-                                          (lat[1:N-1, 0:N-2] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[1:N-1, 0:N-2])) + 
-                                          (lat[1:N-1, 2:N] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[1:N-1, 2:N])) + 
-                                          (lat[0:N-2, 0:N-2] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[0:N-2, 0:N-2])) + 
-                                          (lat[2:N, 2:N] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[2:N, 2:N])) + 
-                                          (lat[2:N, 0:N-2] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[2:N, 0:N-2])) + 
-                                          (lat[0:N-2, 2:N] != -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - lat[0:N-2, 2:N])) +
-                                          (lat[0:N-2, 1:N-1] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - np.pi)) + 
-                                          (lat[2:N, 1:N-1] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 2*np.pi)) + 
-                                          (lat[1:N-1, 0:N-2] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 1.5*np.pi)) + 
-                                          (lat[1:N-1, 2:N] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 0.5*np.pi)) + 
-                                          (lat[0:N-2, 0:N-2] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 1.25*np.pi)) + 
-                                          (lat[2:N, 2:N] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 0.25*np.pi)) + 
-                                          (lat[2:N, 0:N-2] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 1.75*np.pi)) + 
-                                          (lat[0:N-2, 2:N] == -1.)*np.cos(np.abs(lat[1:N-1, 1:N-1] - 0.75*np.pi)))
+    H_lat = (lat[1:N-1, 1:N-1] != -1.) * ((lat[0:N-2, 1:N-1] != -1.) * np.cos(lat[1:N-1, 1:N-1] + lat[0:N-2, 1:N-1]) + 
+                                          (lat[2:N, 1:N-1] != -1.) * np.cos(lat[1:N-1, 1:N-1] + lat[2:N, 1:N-1]) + 
+                                          (lat[1:N-1, 0:N-2] != -1.) * np.cos(lat[1:N-1, 1:N-1] + lat[1:N-1, 0:N-2] - np.pi) + 
+                                          (lat[1:N-1, 2:N] != -1.) * np.cos(lat[1:N-1, 1:N-1] + lat[1:N-1, 2:N] - np.pi) +
+                                          (lat[0:N-2, 0:N-2] != -1.) * np.cos(lat[1:N-1, 1:N-1] + lat[0:N-2, 0:N-2] - 0.5*np.pi) + 
+                                          (lat[2:N, 2:N] != -1.) * np.cos(lat[1:N-1, 1:N-1] + lat[2:N, 2:N] - 0.5*np.pi) + 
+                                          (lat[2:N, 0:N-2] != -1.) * np.cos(lat[1:N-1, 1:N-1] + lat[2:N, 0:N-2] - 1.5*np.pi) + 
+                                          (lat[0:N-2, 2:N] != -1.) * np.cos(lat[1:N-1, 1:N-1] + lat[0:N-2, 2:N] - 1.5*np.pi) +
+                                          (lat[0:N-2, 1:N-1] == -1.) * np.cos(lat[1:N-1, 1:N-1] - np.pi) + 
+                                          (lat[2:N, 1:N-1] == -1.) * np.cos(lat[1:N-1, 1:N-1] - 2*np.pi) + 
+                                          (lat[1:N-1, 0:N-2] == -1.) * np.cos(lat[1:N-1, 1:N-1] - 1.5*np.pi) + 
+                                          (lat[1:N-1, 2:N] == -1.) * np.cos(lat[1:N-1, 1:N-1] - 0.5*np.pi) +
+                                          (lat[0:N-2, 0:N-2] == -1.) * np.cos(lat[1:N-1, 1:N-1] - 1.25*np.pi) + 
+                                          (lat[2:N, 2:N] == -1.) * np.cos(lat[1:N-1, 1:N-1] - 0.25*np.pi) + 
+                                          (lat[2:N, 0:N-2] == -1.) * np.cos(lat[1:N-1, 1:N-1] - 1.75*np.pi) + 
+                                          (lat[0:N-2, 2:N] == -1.) * np.cos(lat[1:N-1, 1:N-1] - 0.75*np.pi)
+                                         )
     return np.sum(H_lat)
+
+
 
 
 energy = np.zeros(timesteps)
@@ -64,7 +68,7 @@ for n in range(1, timesteps):
         lattice[i, j, n], lattice[i+di, j+dj, n] = lattice[i+di, j+dj, n-1], lattice[i, j, n-1]
     energy[n] = energy_f(lattice[:, :, n])
     if T_decrease == 'linear':
-        T[n] = T[n-1] - T_init/(timesteps*1000)
+        T[n] = T[n-1] - T_init/(timesteps)
     if np.random.random() >= np.e**((energy[n-1] - energy[n])/T[n]): # rejecting change
 	    lattice[:, :, n] = lattice[:, :, n-1]
 	    energy[n] = energy[n-1]
@@ -94,6 +98,9 @@ color = 'blue'
 ax2.set_ylabel('temperature', color=color)  # we already handled the x-label with ax1
 ax2.plot(np.arange(timesteps), T, color=color)
 ax2.tick_params(axis='y', labelcolor=color)
+
+if not os.path.exists('lattice_plots_%s_%s_%s_%s_%s'%(N,N_lipids, timesteps, density, T_decrease)):
+    os.makedirs('lattice_plots_%s_%s_%s_%s_%s'%(N,N_lipids, timesteps, density, T_decrease))
 
 fig.tight_layout()  # otherwise the right y-label is slightly clipped
 plt.savefig('lattice_plots_%s_%s_%s_%s_%s/energy_plot.png'%(N,N_lipids, timesteps, density, T_decrease))
