@@ -30,6 +30,7 @@ def calculate_sizes(lattice, fname):
     print("median object size = ", median_object_size)
 
     plt.savefig('%s.png'%fname)
+    plt.close()
 
 #lattice = np.load('lattice_100000_x_100_y_100.npy')
 
