@@ -19,15 +19,15 @@ for i in range(lip_no):
     lip_heads[0, i, 0] = np.random.rand() * dimensions 
     lip_heads[1, i, 0] = np.random.rand() * dimensions
     rand = np.random.rand()
-    lip_tails[0, i, 0] = lip_heads[0, i, 0] + 0.4*np.sin(rand * 2 * np.pi)
-    lip_tails[1, i, 0] = lip_heads[1, i, 0] - 0.4*np.cos(rand * 2 * np.pi)
+    lip_tails[0, i, 0] = lip_heads[0, i, 0] + 0.4*np.cos(rand * 2 * np.pi)
+    lip_tails[1, i, 0] = lip_heads[1, i, 0] + 0.4*np.sin(rand * 2 * np.pi)
 
 for n in range(1, N):
 	for i in range(lip_no):
 		lip_heads[:, i, n] = np.clip(lip_heads[:, i, n-1] + dxys[:, i, n], 1, dimensions-1)
 		rand = np.random.rand()
-		lip_tails[0, i, n] = lip_heads[0, i, n] + 0.4*np.sin(rand * 2 * np.pi)
-		lip_tails[1, i, n] = lip_heads[1, i, n] - 0.4*np.cos(rand * 2 * np.pi)
+		lip_tails[0, i, n] = lip_heads[0, i, n] + 0.4*np.cos(rand * 2 * np.pi)
+		lip_tails[1, i, n] = lip_heads[1, i, n] + 0.4*np.sin(rand * 2 * np.pi)
 
 for i in range(1,N):
     plt.figure(i-1, figsize=(6,6))
