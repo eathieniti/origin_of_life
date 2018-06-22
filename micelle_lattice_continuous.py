@@ -8,8 +8,8 @@ from utils import calculate_sizes
 save_plots = True
 
 timesteps = 100000
-N = 40
-N_lipids = 500
+N = 100
+N_lipids = 3000
 
 
 lattice = np.ones((N, N, timesteps)) * -1.
@@ -17,7 +17,7 @@ lattice = np.ones((N, N, timesteps)) * -1.
 T = np.zeros(timesteps)
 T_init = 1.
 T[0] = T_init
-T_decrease = 'linear'
+T_decrease = 'static'
 
 density = float(N_lipids)/(N*N)
 print("timesteps: ", timesteps, "N: ", N, "N_lipids: ",N_lipids)
