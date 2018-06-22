@@ -14,11 +14,14 @@ noise_scale = 0.1
 infl_repulsion_heads = 0.2 
 detection_radius = 5.
 lipid_length = 0.4
+lip_len_scale = 0.
+min_tail_dist = 0.001
 
 noise = norm.rvs(size=(2, lip_no, N)) * noise_scale
 
 lip_heads = np.zeros((2, lip_no, N))
 lip_tails = np.zeros((2, lip_no, N))
+lip_lengths = norm.rvs(size=lip_no) * lip_len_scale + lipid_length
 
 
 # maybe make sure the same rand. no is not chosen twise
@@ -26,14 +29,14 @@ for i in range(lip_no):
     lip_heads[0, i, 0] = np.random.rand() * dimensions 
     lip_heads[1, i, 0] = np.random.rand() * dimensions
     rand = np.random.rand()
-    lip_tails[0, i, 0] = lip_heads[0, i, 0] + 0.4*np.cos(rand * 2 * np.pi)
-    lip_tails[1, i, 0] = lip_heads[1, i, 0] + 0.4*np.sin(rand * 2 * np.pi)
+    lip_tails[0, i, 0] = lip_heads[0, i, 0] + lip_lengths[i]*np.cos(rand * 2 * np.pi)
+    lip_tails[1, i, 0] = lip_heads[1, i, 0] + lip_lengths[i]*np.sin(rand * 2 * np.pi)
 
-def dist_constraint(pos):
+def dist_constraint(pos, lip_len):
     """
     This is the constraint to keep the distance between the head and the tail constant.
     """
-    return ((pos[0]-pos[2])**2 + (pos[1]-pos[3])**2)**0.5 - lipid_length
+    return ((pos[0]-pos[2])**2 + (pos[1]-pos[3])**2)**0.5 - lip_len
 
 def small_step_constraint(pos, x_old, y_old):
     """
@@ -44,6 +47,9 @@ def small_step_constraint(pos, x_old, y_old):
     """
     return -(((x_old - (pos[0]+pos[2])/2.)**2 + (y_old - (pos[1]+pos[3])/2.)**2)**0.5 - dir_step_size)
 
+def tails_constraint(pos, tails):
+    return min(np.sum((tails.T - pos[:2])**2, axis=1)**0.5) - min_tail_dist
+
 # def jac_dist_constraint(pos1, x2, y2):
 #     return ()
     
@@ -51,8 +57,8 @@ def distance(pos, tails, heads):
     """
     pos: [tail.x, tail.y, head.x, head.y]
     """ 
-    return (np.sum(np.sum((tails.T - pos[2:])**2, axis=1)**0.5, axis=0) - 
-            infl_repulsion_heads * np.sum(np.sum((heads.T - pos[:2])**2, axis=1)**0.5, axis=0))
+    return (np.sum(np.sum((tails.T - pos[:2])**2, axis=1)**0.5, axis=0) - 
+            infl_repulsion_heads * np.sum(np.sum((heads.T - pos[2:])**2, axis=1)**0.5, axis=0))
 
 a = np.zeros((lip_no, N))
 for n in range(1, N):
@@ -65,11 +71,12 @@ for n in range(1, N):
         
         res = minimize(distance, np.concatenate((lip_tails[:, i, n], lip_heads[:, i, n])), 
                        args=(lip_tails[:, neighbours, n], lip_heads[:, neighbours, n]),
-                       constraints=({"type": "eq", "fun": dist_constraint}, 
-                                    {"type": "ineq", "fun": small_step_constraint, "args": masspoint}))
+                       constraints=({"type": "eq", "fun": dist_constraint, "args": (lip_lengths[i],)}, 
+                                    {"type": "ineq", "fun": small_step_constraint, "args": masspoint},
+                                    {"type": "ineq", "fun": tails_constraint, "args": (lip_tails[:, neighbours, n],)}))
         new_pos = res.x
-        lip_tails[:, i, n] = np.clip(new_pos[2:] + noise[:, i, n], 1, dimensions-1)
-        lip_heads[:, i, n] = np.clip(new_pos[:2] + noise[:, i, n], 1, dimensions-1)
+        lip_tails[:, i, n] = np.clip(new_pos[:2] + noise[:, i, n], 1, dimensions-1)
+        lip_heads[:, i, n] = np.clip(new_pos[2:] + noise[:, i, n], 1, dimensions-1)
     print n
         
 
