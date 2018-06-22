@@ -11,8 +11,9 @@ N = 200
 
 dir_step_size = 0.1
 noise_scale = 0.05
-infl_repulsion_heads = 0.2
+infl_repulsion_heads = 0.2 
 detection_radius = 5.
+lipid_lenght = 0.4
 
 noise = norm.rvs(size=(2, lip_no, N)) * noise_scale
 
@@ -32,7 +33,7 @@ def dist_constraint(pos):
     """
     This is the constraint to keep the distance between the head and the tail constant.
     """
-    return ((pos[0]-pos[2])**2 + (pos[1]-pos[3])**2)**0.5 - 0.4
+    return ((pos[0]-pos[2])**2 + (pos[1]-pos[3])**2)**0.5 - lipid_lenght
 
 def small_step_constraint(pos, x_old, y_old):
     """
