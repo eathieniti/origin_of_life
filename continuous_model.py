@@ -32,13 +32,19 @@ def dist_constraint(pos):
 def small_step_constraint(pos, x_old, y_old):
     """
     This is the constraint for not making too large steps.
+    x_old and y_old are the old positions of the mass points
+    slowing down the movement because of friction with water
     """
     return -(((x_old - (pos[0]+pos[2])/2.)**2 + (y_old - (pos[1]+pos[3])/2.)**2)**0.5 - 0.2)
 
 # def jac_dist_constraint(pos1, x2, y2):
 #     return ()
     
-def distance(pos, tails, heads): 
+def distance(pos, tails, heads):
+	"""
+	pos: [tail.x, tail.y, head.x, head.y]
+	
+	""" 
     return (np.sum(np.sum((tails.T - pos[2:])**2, axis=1)**0.5, axis=0) - 
             0.1 * np.sum(np.sum((heads.T - pos[:2])**2, axis=1)**0.5, axis=0))
 
@@ -48,7 +54,9 @@ for n in range(1, N):
 	lip_tails[:, :, n] = lip_tails[:, :, n-1]
 	for i in np.random.permutation(lip_no):
 		neighbours = np.array(((lip_tails[0, :, n] - lip_tails[0, i, n])**2 + (lip_tails[1, :, n] - lip_tails[1, i, n])**2)**0.5 < 5.)
+ 		
  		masspoint = ((lip_heads[0, i, n] + lip_tails[0, i, n])/2., (lip_heads[1, i, n] + lip_tails[1, i, n])/2.)
+ 		
  		res = minimize(distance, np.concatenate((lip_tails[:, i, n], lip_heads[:, i, n])), 
  		               args=(lip_tails[:, neighbours, n], lip_heads[:, neighbours, n]),
  		               constraints=({"type": "eq", "fun": dist_constraint}, 
