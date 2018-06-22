@@ -10,7 +10,7 @@ T = 0.1
 N = 200
 
 dir_step_size = 0.1
-noise_scale = 0.05
+noise_scale = 0.1
 infl_repulsion_heads = 0.2 
 detection_radius = 5.
 lipid_lenght = 0.4
@@ -48,29 +48,29 @@ def small_step_constraint(pos, x_old, y_old):
 #     return ()
     
 def distance(pos, tails, heads):
-	"""
-	pos: [tail.x, tail.y, head.x, head.y]
-	""" 
-	return (np.sum(np.sum((tails.T - pos[2:])**2, axis=1)**0.5, axis=0) - 
+    """
+    pos: [tail.x, tail.y, head.x, head.y]
+    """ 
+    return (np.sum(np.sum((tails.T - pos[2:])**2, axis=1)**0.5, axis=0) - 
             infl_repulsion_heads * np.sum(np.sum((heads.T - pos[:2])**2, axis=1)**0.5, axis=0))
 
 a = np.zeros((lip_no, N))
 for n in range(1, N):
-	lip_heads[:, :, n] = lip_heads[:, :, n-1]
-	lip_tails[:, :, n] = lip_tails[:, :, n-1]
-	for i in np.random.permutation(lip_no):
-		neighbours = np.array(((lip_tails[0, :, n] - lip_tails[0, i, n])**2 + (lip_tails[1, :, n] - lip_tails[1, i, n])**2)**0.5 < detection_radius)
- 		
- 		masspoint = ((lip_heads[0, i, n] + lip_tails[0, i, n])/2., (lip_heads[1, i, n] + lip_tails[1, i, n])/2.)
- 		
- 		res = minimize(distance, np.concatenate((lip_tails[:, i, n], lip_heads[:, i, n])), 
- 		               args=(lip_tails[:, neighbours, n], lip_heads[:, neighbours, n]),
- 		               constraints=({"type": "eq", "fun": dist_constraint}, 
- 		                            {"type": "ineq", "fun": small_step_constraint, "args": masspoint}))
- 		new_pos = res.x
- 		lip_tails[:, i, n] = np.clip(new_pos[2:] + noise[:, i, n], 1, dimensions-1)
- 		lip_heads[:, i, n] = np.clip(new_pos[:2] + noise[:, i, n], 1, dimensions-1)
- 	print n
+    lip_heads[:, :, n] = lip_heads[:, :, n-1]
+    lip_tails[:, :, n] = lip_tails[:, :, n-1]
+    for i in np.random.permutation(lip_no):
+        neighbours = np.array(((lip_tails[0, :, n] - lip_tails[0, i, n])**2 + (lip_tails[1, :, n] - lip_tails[1, i, n])**2)**0.5 < detection_radius)
+        
+        masspoint = ((lip_heads[0, i, n] + lip_tails[0, i, n])/2., (lip_heads[1, i, n] + lip_tails[1, i, n])/2.)
+        
+        res = minimize(distance, np.concatenate((lip_tails[:, i, n], lip_heads[:, i, n])), 
+                       args=(lip_tails[:, neighbours, n], lip_heads[:, neighbours, n]),
+                       constraints=({"type": "eq", "fun": dist_constraint}, 
+                                    {"type": "ineq", "fun": small_step_constraint, "args": masspoint}))
+        new_pos = res.x
+        lip_tails[:, i, n] = np.clip(new_pos[2:] + noise[:, i, n], 1, dimensions-1)
+        lip_heads[:, i, n] = np.clip(new_pos[:2] + noise[:, i, n], 1, dimensions-1)
+    print n
         
 
 for i in range(1,N):
