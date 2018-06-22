@@ -9,7 +9,12 @@ dimensions = 20
 T = 0.1
 N = 200
 
-noise = norm.rvs(size=(2, lip_no, N)) * 0.01
+dir_step_size = 0.1
+noise_scale = 0.05
+infl_repulsion_heads = 0.2
+detection_radius = 5.
+
+noise = norm.rvs(size=(2, lip_no, N)) * noise_scale
 
 lip_heads = np.zeros((2, lip_no, N))
 lip_tails = np.zeros((2, lip_no, N))
@@ -34,8 +39,9 @@ def small_step_constraint(pos, x_old, y_old):
     This is the constraint for not making too large steps.
     x_old and y_old are the old positions of the mass points
     slowing down the movement because of friction with water
+    max step size 0.1
     """
-    return -(((x_old - (pos[0]+pos[2])/2.)**2 + (y_old - (pos[1]+pos[3])/2.)**2)**0.5 - 0.2)
+    return -(((x_old - (pos[0]+pos[2])/2.)**2 + (y_old - (pos[1]+pos[3])/2.)**2)**0.5 - dir_step_size)
 
 # def jac_dist_constraint(pos1, x2, y2):
 #     return ()
@@ -43,17 +49,16 @@ def small_step_constraint(pos, x_old, y_old):
 def distance(pos, tails, heads):
 	"""
 	pos: [tail.x, tail.y, head.x, head.y]
-	
 	""" 
-    return (np.sum(np.sum((tails.T - pos[2:])**2, axis=1)**0.5, axis=0) - 
-            0.1 * np.sum(np.sum((heads.T - pos[:2])**2, axis=1)**0.5, axis=0))
+	return (np.sum(np.sum((tails.T - pos[2:])**2, axis=1)**0.5, axis=0) - 
+            infl_repulsion_heads * np.sum(np.sum((heads.T - pos[:2])**2, axis=1)**0.5, axis=0))
 
 a = np.zeros((lip_no, N))
 for n in range(1, N):
 	lip_heads[:, :, n] = lip_heads[:, :, n-1]
 	lip_tails[:, :, n] = lip_tails[:, :, n-1]
 	for i in np.random.permutation(lip_no):
-		neighbours = np.array(((lip_tails[0, :, n] - lip_tails[0, i, n])**2 + (lip_tails[1, :, n] - lip_tails[1, i, n])**2)**0.5 < 5.)
+		neighbours = np.array(((lip_tails[0, :, n] - lip_tails[0, i, n])**2 + (lip_tails[1, :, n] - lip_tails[1, i, n])**2)**0.5 < detection_radius)
  		
  		masspoint = ((lip_heads[0, i, n] + lip_tails[0, i, n])/2., (lip_heads[1, i, n] + lip_tails[1, i, n])/2.)
  		
