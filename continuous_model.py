@@ -14,13 +14,13 @@ dimensions = 20
 T = 0.1
 N = 1000
 
-dir_step_size = 0.1
+dir_step_size = 0.3
 noise_scale = 0.1
 infl_repulsion_heads = 0.2 
-detection_radius = 10.
+detection_radius = 1.
 lipid_length = 0.4
 lip_len_scale = 0.
-min_tail_dist = 0.01
+min_tail_dist = 0.1
 
 noise = norm.rvs(size=(2, lip_no, N)) * noise_scale
 
@@ -45,7 +45,7 @@ def dist_constraint(pos, lip_len):
 
 def jac_dist_constraint(pos, lip_len):
     divid = ((pos[0]-pos[2])**2 + (pos[1]-pos[3])**2)**0.5
-    return ((pos[0]-pos[2])/divid, -(pos[0]-pos[2])/divid, (pos[1]-pos[3])/divid, -(pos[1]-pos[3])/divid)
+    return ((pos[0]-pos[2])/divid, (pos[1]-pos[3])/divid, -(pos[0]-pos[2])/divid, -(pos[1]-pos[3])/divid)
 
 def small_step_constraint(pos, x_old, y_old):
     """
@@ -58,7 +58,12 @@ def small_step_constraint(pos, x_old, y_old):
 
 def jac_small_step_constraint(pos, x_old, y_old):
     divid = ((0.5*(-pos[0]-pos[2]) + x_old)**2 + (0.5*(-pos[1]-pos[3]) + y_old)**2)**0.5
-    return (-((pos[0]+pos[2])/2 - x_old)/divid, -((pos[0]+pos[2])/2 - x_old)/divid, -((pos[1]+pos[3])/2 - y_old)/divid, -((pos[1]+pos[3])/2 - y_old)/divid)
+    return (-((pos[0]+pos[2])/2 - x_old)/divid, -((pos[1]+pos[3])/2 - y_old)/divid, -((pos[0]+pos[2])/2 - x_old)/divid, -((pos[1]+pos[3])/2 - y_old)/divid)
+
+def intersect_constraint(pos, tails, heads):
+    ccw = lambda A, B, C: (C[1]-A[1]) * (B[0]-A[0]) > (B[1]-A[1]) * (C[0]-A[0])
+    return sum(ccw(pos[:2], heads[:, i], tails[:, i]) != ccw(pos[2:], heads[:, i], tails[:, i]) and
+               ccw(pos[:2], pos[2:], heads[:, i]) != ccw(pos[:2], pos[2:], tails[:, i]) for i in range(heads.shape[1]))
 
 def tails_constraint(pos, tails):
     return min(np.sum((tails.T - pos[:2])**2, axis=1)**0.5) - min_tail_dist
@@ -74,8 +79,8 @@ def distance(pos, tails, heads):
     """
     pos: [tail.x, tail.y, head.x, head.y]
     """ 
-    return (np.sum(np.sum((tails.T - pos[:2])**2, axis=1)**0.5, axis=0) - 
-            infl_repulsion_heads * np.sum(np.sum((heads.T - pos[2:])**2, axis=1)**0.5, axis=0))
+    return (np.sum(np.sum((tails.T - pos[:2])**2, axis=1)**0.5, axis=0)
+            - 0.5 * np.sum(np.sum((tails.T - pos[2:])**2, axis=1)**0.5, axis=0))
 
 
 def visualization(n, tails, heads):
@@ -105,9 +110,9 @@ for n in range(1, N):
                            args=(lip_tails[:, neighbours, n], lip_heads[:, neighbours, n]), options={"maxiter": 500},
                            constraints=({"type": "eq", "fun": dist_constraint, "args": (lip_lengths[i],)}, 
                                         {"type": "ineq", "fun": small_step_constraint, "args": masspoint},
-                                        {"type": "ineq", "fun": tails_constraint, "args": (lip_tails[:, neighbours, n],)},
-                                        {"type": "ineq", "fun": heads_constraint, "args": (lip_heads[:, neighbours, n],)},
-                                        {"type": "ineq", "fun": head_tail_constraint, "args": (lip_tails[:, neighbours, n],)}))
+                                        #{"type": "eq", "fun": intersect_constraint, "args": (lip_tails[:, neighbours, n], lip_heads[:, neighbours, n])}))
+                                        {"type": "ineq", "fun": tails_constraint, "args": (lip_tails[:, neighbours, n],)}))
+                                        #{"type": "ineq", "fun": heads_constraint, "args": (lip_heads[:, neighbours, n],)}))
             new_pos = res.x
         lip_tails[:, i, n] = np.clip(new_pos[:2] + noise[:, i, n], 1, dimensions-1)
         lip_heads[:, i, n] = np.clip(new_pos[2:] + noise[:, i, n], 1, dimensions-1)
