@@ -55,12 +55,16 @@ def small_step_constraint(pos, x_old, y_old):
 def tails_constraint(pos, tails):
     return min(np.sum((tails.T - pos[:2])**2, axis=1)**0.5) - min_tail_dist
 
+def heads_constraint(pos, heads):
+    return min(np.sum((heads.T - pos[2:])**2, axis=1)**0.5) - min_head_dist
     
 def distance(pos, tails, heads):
     """
     pos: [tail.x, tail.y, head.x, head.y]
     """ 
+    sec_tails = heads.T + 0.2*(tails.T - heads.T)
     return (np.sum(np.sum((tails.T - pos[:2])**2, axis=1)**0.5, axis=0)
+            + np.sum(np.sum((sec_tails - (pos[2:] + 0.2*(pos[:2] - pos[2:])))**2, axis=1)**0.5, axis=0)
             - 0.5 * np.sum(np.sum((tails.T - pos[2:])**2, axis=1)**0.5, axis=0))
 
 
@@ -91,7 +95,8 @@ for n in range(1, N):
                            args=(lip_tails[:, neighbours, n], lip_heads[:, neighbours, n]), options={"maxiter": 500},
                            constraints=({"type": "eq", "fun": dist_constraint, "args": (lip_lengths[i],)}, 
                                         {"type": "ineq", "fun": small_step_constraint, "args": masspoint},
-                                        {"type": "ineq", "fun": tails_constraint, "args": (lip_tails[:, neighbours, n],)}))
+                                        {"type": "ineq", "fun": tails_constraint, "args": (lip_tails[:, neighbours, n],)},
+                                        {"type": "ineq", "fun": heads_constraint, "args": (lip_heads[:, neighbours, n],)}))
             new_pos = res.x
             cost = res.fun
         lip_tails[:, i, n] = np.clip(new_pos[:2] + noise[:, i, n], 1, dimensions-1)
