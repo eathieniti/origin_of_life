@@ -92,10 +92,17 @@ def visualization(n, tails, heads):
     fig, ax = plt.subplots(1, 2, figsize=(12,6))
     ax[0].plot([tails[0, indices], heads[0, indices]], [tails[1, indices], heads[1, indices]], 'k-')
     ax[0].plot(heads[0, indices], heads[1,indices], 'r.')
-    #plt.plot([tails[0,:], heads[0,:]], [tails[1,:], heads[1,:]], 'k-')
-    #for j in range(lip_no):
-    #    plt.plot(heads[0,j], heads[1,j], 'r.')
-    ax[1].plot(T)
+    color = 'blue'
+    total_costs = np.nansum(total_costs_N, axis=0)[:n+1]
+    ax[1].plot(total_costs, color=color)
+    ax[1].set_xlabel("time")
+    ax[1].set_ylabel('Total cost', color=color)
+    ax[1].tick_params(axis='y', labelcolor=color)
+    ax3 = ax[1].twinx()  # instantiate a second axes that shares the same x-axis
+    color = 'red'
+    ax3.set_ylabel("Temperature", color=color)  # we already handled the x-label with ax1
+    ax3.plot(T, color=color)
+    ax3.tick_params(axis='y', labelcolor=color)
     plt.savefig(out_dir + '/continuous_%03d.png'%(n))
     #plt.show()
     plt.close(n)
@@ -113,6 +120,7 @@ for n in range(1, N):
         neighbours = np.logical_and(0. < distances, distances < detection_radius)
         if sum(neighbours) == 0:
             new_pos = np.concatenate((lip_tails[:, i, n], lip_heads[:, i, n]))
+            cost = 0
         else:
             masspoint = ((lip_heads[0, i, n] + lip_tails[0, i, n])/2., (lip_heads[1, i, n] + lip_tails[1, i, n])/2.)
             res = minimize(distance, np.concatenate((lip_tails[:, i, n], lip_heads[:, i, n])), method="SLSQP",
@@ -125,8 +133,8 @@ for n in range(1, N):
             cost = res.fun
         total_costs_N[i][n] = cost
 
-        lip_tails[:, i, n] = np.clip(new_pos[:2] + noise[:, i, n] * T, 1, dimensions-1)
-        lip_heads[:, i, n] = np.clip(new_pos[2:] + noise[:, i, n] * T, 1, dimensions-1)
+        lip_tails[:, i, n] = np.clip(new_pos[:2] + noise[:, i, n] * T[n-1], 1, dimensions-1)
+        lip_heads[:, i, n] = np.clip(new_pos[2:] + noise[:, i, n] * T[n-1], 1, dimensions-1)
     print(n)
     
     if n % 100 == 0:
