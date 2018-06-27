@@ -13,10 +13,10 @@ from scipy.optimize import minimize
 # Params for bilayer!!
 ## original set
 lip_no = 300
-#dimensions = 20
 dimensions = 20
-T = 0.1
-N = 200
+
+N = 1100
+T = [1.]
 
 dir_step_size = 0.3
 noise_scale = 0.1
@@ -30,7 +30,7 @@ min_tail_dist = 0.3
 min_head_dist = 0.4
 
 ex=6
-out_dir = "plots_ll_%s_dr_%s_ss_%s_noise_%s_taildist_%s_ex_%s_energy"%(lipid_length,detection_radius, dir_step_size,noise_scale,min_tail_dist,ex )
+out_dir = "plots_temperature_decrease"
 
 try:
     os.mkdir(out_dir)
@@ -88,16 +88,14 @@ def distance(pos, tails, heads, ex):
 
 def visualization(n, tails, heads):
     indices = (np.abs(np.sum((heads.T - tails.T)**2, axis=1)**0.5 - lip_lengths) < 0.1 )
-    print(indices)
-    plt.figure(n, figsize=(6,6))
-    axes = plt.gca()
-    axes.set_xlim([0,dimensions])
-    axes.set_ylim([0,dimensions])
-    plt.plot([tails[0, indices], heads[0, indices]], [tails[1, indices], heads[1, indices]], 'k-')
-    plt.plot(heads[0, indices], heads[1,indices], 'r.')
+    #print(indices)
+    fig, ax = plt.subplots(1, 2, figsize=(12,6))
+    ax[0].plot([tails[0, indices], heads[0, indices]], [tails[1, indices], heads[1, indices]], 'k-')
+    ax[0].plot(heads[0, indices], heads[1,indices], 'r.')
     #plt.plot([tails[0,:], heads[0,:]], [tails[1,:], heads[1,:]], 'k-')
     #for j in range(lip_no):
     #    plt.plot(heads[0,j], heads[1,j], 'r.')
+    ax[1].plot(T)
     plt.savefig(out_dir + '/continuous_%03d.png'%(n))
     #plt.show()
     plt.close(n)
@@ -127,9 +125,15 @@ for n in range(1, N):
             cost = res.fun
         total_costs_N[i][n] = cost
 
-        lip_tails[:, i, n] = np.clip(new_pos[:2] + noise[:, i, n], 1, dimensions-1)
-        lip_heads[:, i, n] = np.clip(new_pos[2:] + noise[:, i, n], 1, dimensions-1)
+        lip_tails[:, i, n] = np.clip(new_pos[:2] + noise[:, i, n] * T, 1, dimensions-1)
+        lip_heads[:, i, n] = np.clip(new_pos[2:] + noise[:, i, n] * T, 1, dimensions-1)
     print(n)
+    
+    if n % 100 == 0:
+        T.append(T[-1] - 0.1)
+        dir_step_size = 0.3 * T[n]
+    else:
+        T.append(T[-1])
 
     p = Process(target=visualization, args=(n, lip_tails[:, :, n], lip_heads[:, :, n]))
     p.start()
