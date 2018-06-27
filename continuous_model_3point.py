@@ -3,24 +3,52 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from math import sqrt
-
+import os
 from multiprocessing import Process
 
 from scipy.stats import norm
 from scipy.optimize import minimize
 
+
+lip_no = 300
+dimensions = 50
+T = 0.1
+N = 300
+
+dir_step_size = 0.3
+noise_scale = 0.05
+infl_repulsion_heads = 0.2 
+detection_radius = 2
+lipid_length = 0.5
+lipid_length = 1.7
+lip_len_scale = 0.
+min_tail_dist = 0.3
+min_head_dist = 0.4
+
+
+## original set
 lip_no = 300
 dimensions = 20
+dimensions = 50
 T = 0.1
 N = 1000
 
 dir_step_size = 0.3
 noise_scale = 0.1
-infl_repulsion_heads = 0.2 
+infl_repulsion_heads = 0.2
 detection_radius = 1.
-lipid_length = 0.4
+lipid_length = 2
 lip_len_scale = 0.
 min_tail_dist = 0.1
+
+min_head_dist = 0.4
+
+
+out_dir = "plots_%s_%s_%s"%(lipid_length,detection_radius, dir_step_size )
+try:
+    os.mkdir(out_dir)
+except:
+    pass
 
 noise = norm.rvs(size=(2, lip_no, N)) * noise_scale
 
@@ -29,10 +57,11 @@ lip_tails = np.zeros((2, lip_no, N))
 lip_lengths = norm.rvs(size=lip_no) * lip_len_scale + lipid_length
 
 
+
 # maybe make sure the same rand. no is not chosen twise
 for i in range(lip_no):
-    lip_heads[0, i, 0] = np.random.rand() * dimensions 
-    lip_heads[1, i, 0] = np.random.rand() * dimensions
+    lip_heads[0, i, 0] = np.random.rand() * dimensions*0.8 + dimensions*0.1
+    lip_heads[1, i, 0] = np.random.rand() * dimensions*0.8 + dimensions*0.1
     rand = np.random.rand()
     lip_tails[0, i, 0] = lip_heads[0, i, 0] + lip_lengths[i]*np.cos(rand * 2 * np.pi)
     lip_tails[1, i, 0] = lip_heads[1, i, 0] + lip_lengths[i]*np.sin(rand * 2 * np.pi)
@@ -57,7 +86,8 @@ def tails_constraint(pos, tails):
 
 def heads_constraint(pos, heads):
     return min(np.sum((heads.T - pos[2:])**2, axis=1)**0.5) - min_head_dist
-    
+
+
 def distance(pos, tails, heads):
     """
     pos: [tail.x, tail.y, head.x, head.y]
@@ -75,8 +105,8 @@ def visualization(n, tails, heads):
     axes.set_ylim([0,dimensions])
     plt.plot([tails[0,:], heads[0,:]], [tails[1,:], heads[1,:]], 'k-')
     for j in range(lip_no):
-        plt.plot(tails[0,j], tails[1,j], 'r.')
-    plt.savefig('plots/continuous_%03d.png'%(n))
+        plt.plot(heads[0,j], heads[1,j], 'r.')
+    plt.savefig(out_dir + '/continuous_%03d.png'%(n))
     #plt.show()
     plt.close(n)
 
@@ -101,7 +131,7 @@ for n in range(1, N):
             cost = res.fun
         lip_tails[:, i, n] = np.clip(new_pos[:2] + noise[:, i, n], 1, dimensions-1)
         lip_heads[:, i, n] = np.clip(new_pos[2:] + noise[:, i, n], 1, dimensions-1)
-    print n
+    print(n)
     p = Process(target=visualization, args=(n, lip_tails[:, :, n], lip_heads[:, :, n]))
     p.start()
     p.join()
