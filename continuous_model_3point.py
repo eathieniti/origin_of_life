@@ -21,7 +21,6 @@ N = 200
 dir_step_size = 0.3
 noise_scale = 0.1
 infl_repulsion_heads = 0.2
-<<<<<<< HEAD
 detection_radius = 1.
 lipid_length = 0.6
 lip_len_scale = 0.
@@ -83,12 +82,13 @@ def distance(pos, tails, heads, ex):
     sec_tails = heads.T + 0.2*(tails.T - heads.T)
     return (np.sum(np.sum((tails.T - pos[:2])**2, axis=1)**0.5, axis=0)
             + np.sum(np.sum((sec_tails - (pos[2:] + 0.2*(pos[:2] - pos[2:])))**2, axis=1)**0.5, axis=0)
-            - 0.5 * np.sum(np.sum((tails.T - pos[2:])**2, axis=1)**0.5, axis=0))
+            #- 0.5 * np.sum(np.sum((tails.T - pos[2:])**2, axis=1)**0.5, axis=0)
+            )
 
 
 def visualization(n, tails, heads):
     indices = (np.abs(np.sum((heads.T - tails.T)**2, axis=1)**0.5 - lip_lengths) < 0.1 )
-    print indices
+    print(indices)
     plt.figure(n, figsize=(6,6))
     axes = plt.gca()
     axes.set_xlim([0,dimensions])
