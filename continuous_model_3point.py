@@ -10,10 +10,10 @@ from scipy.stats import norm
 from scipy.optimize import minimize
 
 
-
 # Params for bilayer!!
 ## original set
 lip_no = 300
+#dimensions = 20
 dimensions = 20
 T = 0.1
 N = 200
@@ -21,6 +21,7 @@ N = 200
 dir_step_size = 0.3
 noise_scale = 0.1
 infl_repulsion_heads = 0.2
+<<<<<<< HEAD
 detection_radius = 1.
 lipid_length = 0.6
 lip_len_scale = 0.
@@ -31,6 +32,7 @@ min_head_dist = 0.4
 
 ex=6
 out_dir = "plots_ll_%s_dr_%s_ss_%s_noise_%s_taildist_%s_ex_%s_energy"%(lipid_length,detection_radius, dir_step_size,noise_scale,min_tail_dist,ex )
+
 try:
     os.mkdir(out_dir)
 except:
@@ -41,7 +43,6 @@ noise = norm.rvs(size=(2, lip_no, N)) * noise_scale
 lip_heads = np.zeros((2, lip_no, N))
 lip_tails = np.zeros((2, lip_no, N))
 lip_lengths = norm.rvs(size=lip_no) * lip_len_scale + lipid_length
-
 
 
 # maybe make sure the same rand. no is not chosen twise
@@ -86,13 +87,17 @@ def distance(pos, tails, heads, ex):
 
 
 def visualization(n, tails, heads):
+    indices = (np.abs(np.sum((heads.T - tails.T)**2, axis=1)**0.5 - lip_lengths) < 0.1 )
+    print indices
     plt.figure(n, figsize=(6,6))
     axes = plt.gca()
     axes.set_xlim([0,dimensions])
     axes.set_ylim([0,dimensions])
-    plt.plot([tails[0,:], heads[0,:]], [tails[1,:], heads[1,:]], 'k-')
-    for j in range(lip_no):
-        plt.plot(heads[0,j], heads[1,j], 'r.')
+    plt.plot([tails[0, indices], heads[0, indices]], [tails[1, indices], heads[1, indices]], 'k-')
+    plt.plot(heads[0, indices], heads[1,indices], 'r.')
+    #plt.plot([tails[0,:], heads[0,:]], [tails[1,:], heads[1,:]], 'k-')
+    #for j in range(lip_no):
+    #    plt.plot(heads[0,j], heads[1,j], 'r.')
     plt.savefig(out_dir + '/continuous_%03d.png'%(n))
     #plt.show()
     plt.close(n)
