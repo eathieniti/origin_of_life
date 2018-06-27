@@ -10,41 +10,41 @@ from scipy.stats import norm
 from scipy.optimize import minimize
 
 
-lip_no = 300
-dimensions = 50
-T = 0.1
-N = 300
+#lip_no = 300
+#dimensions = 50
+#T = 0.1
+#N = 300
 
-dir_step_size = 0.3
-noise_scale = 0.05
-infl_repulsion_heads = 0.2 
-detection_radius = 2
-lipid_length = 0.5
-lipid_length = 1.7
-lip_len_scale = 0.
-min_tail_dist = 0.3
-min_head_dist = 0.4
+#dir_step_size = 0.3
+#noise_scale = 0.05
+#infl_repulsion_heads = 0.2 
+#detection_radius = 2
+#lipid_length = 0.5
+#lipid_length = 1.7
+#lip_len_scale = 0.
+#min_tail_dist = 0.3
+#min_head_dist = 0.4
 
 
 ## original set
 lip_no = 300
+#dimensions = 20
 dimensions = 20
-dimensions = 50
 T = 0.1
 N = 1000
 
 dir_step_size = 0.3
 noise_scale = 0.1
 infl_repulsion_heads = 0.2
-detection_radius = 1.
-lipid_length = 2
+detection_radius = 1
+lipid_length = 0.6
 lip_len_scale = 0.
-min_tail_dist = 0.1
+min_tail_dist = 0.
 
-min_head_dist = 0.4
+min_head_dist = 0.8
 
 
-out_dir = "plots_%s_%s_%s"%(lipid_length,detection_radius, dir_step_size )
+out_dir = "plots_t%s_h%s"%(min_tail_dist,min_head_dist )
 try:
     os.mkdir(out_dir)
 except:
@@ -99,13 +99,17 @@ def distance(pos, tails, heads):
 
 
 def visualization(n, tails, heads):
+    indices = (np.abs(np.sum((heads.T - tails.T)**2, axis=1)**0.5 - lip_lengths) < 0.1 )
+    print indices
     plt.figure(n, figsize=(6,6))
     axes = plt.gca()
     axes.set_xlim([0,dimensions])
     axes.set_ylim([0,dimensions])
-    plt.plot([tails[0,:], heads[0,:]], [tails[1,:], heads[1,:]], 'k-')
-    for j in range(lip_no):
-        plt.plot(heads[0,j], heads[1,j], 'r.')
+    plt.plot([tails[0, indices], heads[0, indices]], [tails[1, indices], heads[1, indices]], 'k-')
+    plt.plot(heads[0, indices], heads[1,indices], 'r.')
+    #plt.plot([tails[0,:], heads[0,:]], [tails[1,:], heads[1,:]], 'k-')
+    #for j in range(lip_no):
+    #    plt.plot(heads[0,j], heads[1,j], 'r.')
     plt.savefig(out_dir + '/continuous_%03d.png'%(n))
     #plt.show()
     plt.close(n)
