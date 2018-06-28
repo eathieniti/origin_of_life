@@ -7,7 +7,8 @@ Phospholipids in aqueous solutions arrange themselves in micelles. This is a res
 
 # Discrete lattice Model
 
-# Continuous model (continuous motion, discrete timestep)
+# Continuous model 
+The model with continuous motion for the lipids, but discrete timestep
 ## 2-point lipids
 continuous_model.py
 
