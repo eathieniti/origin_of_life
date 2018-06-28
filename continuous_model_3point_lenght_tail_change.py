@@ -9,16 +9,6 @@ from multiprocessing import Process
 from scipy.stats import norm
 from scipy.optimize import minimize
 
-### 2-point model for the lipids
-### Cost function includes:
-###  1. tail1-tail1 attraction
-###  2. tail2-tail2 attraction
-### Constraints:
-#    1. lipid length
-#    2. small step
-#    3. tail to tail > min_tail_dist
-#    4. head to head > min_head_dist
-
 
 # Params for bilayer!!
 ## original set
@@ -40,13 +30,15 @@ min_tail_dist = 0.3
 min_head_dist = 0.4
 min_tail_dist_max = 0.4
 
-tails_n = 9 # Choose this so that N/tails_n is exactly divisible
-min_tail_dists=np.linspace(0,min_tail_dist_max,tails_n)
-min_tail_dists=np.repeat(min_tail_dists,N/tails_n,axis=0)
+length_n = 9 # Choose this so that N/tails_n is exactly divisible
+lip_lengths_vary=np.linspace(0.1, 1.0, length_n)
+lip_lengths_vary=np.repeat(lip_lengths_vary,N/length_n,axis=0)
+#min_tail_dists=np.linspace(0,min_tail_dist_max,tails_n)
+#min_tail_dists=np.repeat(min_tail_dists,N/tails_n,axis=0)
 
 ex=6
-out_dir = "plots_min_tail_dist_evolve_energy"
-#out_dir = "plots_ll_%s_dr_%s_ss_%s_noise_%s_taildist_%s_ex_%s_N_%s_color"%(lipid_length,detection_radius, dir_step_size,noise_scale,min_tail_dist,ex, N )
+out_dir = "plots_tail_length_vary(0-1)"
+#out_dir = "plots_ll_%s_dr_%s_ss_%s_noise_%s_taildist_%s_ex_%s_N_%s_energy_final"%(lipid_length,detection_radius, dir_step_size,noise_scale,min_tail_dist,ex, N )
 
 try:
     os.mkdir(out_dir)
@@ -101,36 +93,20 @@ def distance(pos, tails, heads, ex):
             )
 
 
-def visualization(n, tails, heads, min_tail_dists):
+def visualization(n, tails, heads, lip_lengths_vary):
     indices = (np.abs(np.sum((heads.T - tails.T)**2, axis=1)**0.5 - lip_lengths) < 0.1 )
     #print(indices)
     fig, ax = plt.subplots(1, 2, figsize=(12,6))
-    ax[0].plot([tails[0, indices], heads[0, indices]], [tails[1, indices], heads[1, indices]], '-', color='darkgrey')
-    ax[0].plot(heads[0, indices], heads[1,indices], 'b.')
-    ax[0].set_xlim([0,dimensions])
-    ax[0].set_ylim([0,dimensions])
-    #ax[0].patch.set_facecolor('lightskyblue')
-    #ax[0].patch.set_alpha(0.3)
+    ax[0].set_ylim(0,dimensions)
+    ax[0].set_xlim(0,dimensions)
+    ax[0].plot([tails[0, indices], heads[0, indices]], [tails[1, indices], heads[1, indices]], 'k-')
+    ax[0].plot(heads[0, indices], heads[1,indices], 'r.')
 
-    color='blue'
-    total_costs = np.nansum(total_costs_N, axis=0)[:n+1]
-    ax[1].plot(total_costs, color=color)
-    ax[1].set_xlabel("time")
-    ax[1].set_xlim([0,N])
-    ax[1].set_ylim([0,4000])
-    ax[1].set_ylabel('Total cost', color=color)
-    ax3 = ax[1].twinx()
-    color='darkgrey'
-    ax3.set_ylabel("Minimal distance between tails")
-    ax3.plot(np.arange(len(min_tail_dists))[1:n], min_tail_dists[1:n], color=color)
-    ax3.tick_params(axis='y', labelcolor=color)
-
-
-    #ax[1].plot(np.arange(len(min_tail_dists))[1:n],min_tail_dists[1:n])
-    #ax[1].set_xlim(1,len(min_tail_dists))
-    #ax[1].set_ylim(0,min_tail_dist_max)
-    #ax[1].set_xlabel("timestep")
-    #ax[1].set_ylabel("min_tail_dist")
+    ax[1].plot(np.arange(len(lip_lengths_vary))[1:n],lip_lengths_vary[1:n])
+    ax[1].set_xlim(1,len(lip_lengths_vary))
+    ax[1].set_ylim(0,1.0)
+    ax[1].set_xlabel("timestep")
+    ax[1].set_ylabel("length tail")
 
     plt.savefig(out_dir + '/continuous_%03d.png'%(n))
     #plt.show()
@@ -139,7 +115,8 @@ def visualization(n, tails, heads, min_tail_dists):
 a = np.zeros((lip_no, N))
 total_costs_N = np.zeros((lip_no,N))
 for n in range(1, N):
-    min_tail_dist=min_tail_dists[n]
+    #min_tail_dist=min_tail_dists[n]
+    lipid_length = lip_lengths_vary[n]
 
     lip_heads[:, :, n] = lip_heads[:, :, n-1]
     lip_tails[:, :, n] = lip_tails[:, :, n-1]
@@ -166,7 +143,7 @@ for n in range(1, N):
         lip_heads[:, i, n] = np.clip(new_pos[2:] + noise[:, i, n], 1, dimensions-1)
     print(n)
 
-    p = Process(target=visualization, args=(n, lip_tails[:, :, n], lip_heads[:, :, n], min_tail_dists))
+    p = Process(target=visualization, args=(n, lip_tails[:, :, n], lip_heads[:, :, n], lip_lengths_vary))
     p.start()
     p.join()
     #visualization(n)
@@ -175,8 +152,6 @@ for n in range(1, N):
 
 # Energy plot
 total_costs=np.nansum(total_costs_N, axis=0)
-np.save(out_dir+"/total_costs", total_costs)
-
 #print(total_costs,total_costs.shape, N)
 fig, ax1 = plt.subplots()
 ax1.set_xlabel('time')
