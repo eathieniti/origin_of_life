@@ -11,16 +11,18 @@ micelle_lattice_v3.py
 
 ## Continuous orientation
 
-
 # Continuous model 
 The model with continuous motion for the lipids, but discrete timestep
 ## 2-point lipids
-continuous_model.py
+Run "python continuous_model.py"
+To obtain a simulation of the 2 point-lipids
 
 
 
 ## 3-point lipids
-continuous_model_3point.py
+
+Run "continuous_model_3point.py"
+To obtain a simulation of the 2 point-lipids
 
 
 
