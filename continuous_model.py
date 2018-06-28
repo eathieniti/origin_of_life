@@ -26,7 +26,7 @@ dir_step_size = 0.3
 noise_scale = 0.1
 infl_repulsion_heads = 0.2 
 detection_radius = 1.
-lipid_length = 0.4
+lipid_length = 0.5
 lip_len_scale = 0.
 min_tail_dist = 0.
 
@@ -36,7 +36,7 @@ lip_heads = np.zeros((2, lip_no, N))
 lip_tails = np.zeros((2, lip_no, N))
 lip_lengths = norm.rvs(size=lip_no) * lip_len_scale + lipid_length
 
-out_dir = "plots_2point_ll_%s_dr_%s_ss_%s_noise_%s_taildist_%s_N_%s_energy_final_no_head_no_constr"%(lipid_length,detection_radius, dir_step_size,noise_scale,min_tail_dist, N )
+out_dir = "plots_2point_ll_%s_dr_%s_ss_%s_noise_%s_taildist_%s_N_%s_color"%(lipid_length,detection_radius, dir_step_size,noise_scale,min_tail_dist, N )
 
 try:
     os.mkdir(out_dir)
@@ -83,9 +83,12 @@ def visualization(n, tails, heads):
     axes = plt.gca()
     axes.set_xlim([0,dimensions])
     axes.set_ylim([0,dimensions])
-    plt.plot([tails[0,:], heads[0,:]], [tails[1,:], heads[1,:]], 'k-')
+    #axes.patch.set_facecolor('lightskyblue')
+    #axes.patch.set_alpha(0.3)
+
+    plt.plot([tails[0,:], heads[0,:]], [tails[1,:], heads[1,:]], '-', color='darkgrey')
     for j in range(lip_no):
-        plt.plot(heads[0,j], heads[1,j], 'r.')
+        plt.plot(heads[0,j], heads[1,j], 'b.')
     plt.savefig(out_dir+'/continuous_%03d.png'%(n))
     #plt.show()
     plt.close(n)

@@ -9,6 +9,16 @@ from multiprocessing import Process
 from scipy.stats import norm
 from scipy.optimize import minimize
 
+### 2-point model for the lipids
+### Cost function includes:
+###  1. tail1-tail1 attraction
+###  2. tail2-tail2 attraction
+### Constraints:
+#    1. lipid length
+#    2. small step
+#    3. tail to tail > min_tail_dist
+#    4. head to head > min_head_dist
+
 
 # Params for bilayer!!
 ## original set
@@ -35,7 +45,7 @@ min_tail_dists=np.linspace(0,min_tail_dist_max,tails_n)
 min_tail_dists=np.repeat(min_tail_dists,N/tails_n,axis=0)
 
 ex=6
-out_dir = "plots_ll_%s_dr_%s_ss_%s_noise_%s_taildist_%s_ex_%s_N_%s_energy_final"%(lipid_length,detection_radius, dir_step_size,noise_scale,min_tail_dist,ex, N )
+out_dir = "plots_ll_%s_dr_%s_ss_%s_noise_%s_taildist_%s_ex_%s_N_%s_color"%(lipid_length,detection_radius, dir_step_size,noise_scale,min_tail_dist,ex, N )
 
 try:
     os.mkdir(out_dir)
@@ -94,8 +104,14 @@ def visualization(n, tails, heads, min_tail_dists):
     indices = (np.abs(np.sum((heads.T - tails.T)**2, axis=1)**0.5 - lip_lengths) < 0.1 )
     #print(indices)
     fig, ax = plt.subplots(1, 2, figsize=(12,6))
-    ax[0].plot([tails[0, indices], heads[0, indices]], [tails[1, indices], heads[1, indices]], 'k-')
-    ax[0].plot(heads[0, indices], heads[1,indices], 'r.')
+    ax[0].plot([tails[0, indices], heads[0, indices]], [tails[1, indices], heads[1, indices]], '-', color='darkgrey')
+    ax[0].plot(heads[0, indices], heads[1,indices], 'b.')
+    ax[0].set_xlim([0,dimensions])
+    ax[0].set_ylim([0,dimensions])
+    #ax[0].patch.set_facecolor('lightskyblue')
+    #ax[0].patch.set_alpha(0.3)
+
+
 
     ax[1].plot(np.arange(len(min_tail_dists))[1:n],min_tail_dists[1:n])
     ax[1].set_xlim(1,len(min_tail_dists))
