@@ -7,7 +7,12 @@ Phospholipids in aqueous solutions arrange themselves in micelles. This is a res
 
 # Discrete lattice Model
 ## Discrete Orientation
-micelle_lattice_v3.py
+Run "python micelle_lattice_4orientation.py"
+To obtain a simulation of the discrete model with 4 discrete orientations.
+
+## Continuous Orientation and Micelle Migration
+Run "python discrete_moving_micelle.py"
+To obtain a simulation of the discrete model with continuous orientation and micelle migration.
 
 ## Continuous orientation
 
