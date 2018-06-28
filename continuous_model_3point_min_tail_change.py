@@ -162,6 +162,8 @@ for n in range(1, N):
 
 # Energy plot
 total_costs=np.nansum(total_costs_N, axis=0)
+np.save(out_dir+"/total_costs", total_costs)
+
 #print(total_costs,total_costs.shape, N)
 fig, ax1 = plt.subplots()
 ax1.set_xlabel('time')

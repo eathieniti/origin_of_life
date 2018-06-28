@@ -69,11 +69,11 @@ def small_step_constraint(pos, x_old, y_old):
 def tails_constraint(pos, tails):
     return min(np.sum((tails.T - pos[:2])**2, axis=1)**0.5) - min_tail_dist
 
-    
+
 def distance(pos, tails, heads):
     """
     pos: [tail.x, tail.y, head.x, head.y]
-    """ 
+    """
     return (np.sum(np.sum((tails.T - pos[:2])**2, axis=1)**0.5, axis=0))
            # - 0.5 * np.sum(np.sum((tails.T - pos[2:])**2, axis=1)**0.5, axis=0))
 
