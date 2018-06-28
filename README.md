@@ -29,7 +29,7 @@ To obtain a simulation of the 3 point-lipids continuous model
   
   This is an extension of the 3-point lipids model to change the min_tail_distance in the same run. This is to show the transition from micelles to bilayers
   
-  TODO: merge experiments into main model
+  TODO: merge experiments code into main model or inherit functions from it..
   
 
 
