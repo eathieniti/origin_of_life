@@ -9,18 +9,26 @@ from multiprocessing import Process
 from scipy.stats import norm
 from scipy.optimize import minimize
 
+import os
+
+### 2-point model for the lipids
+### Cost function includes tail-tail attraction
+### Constraints:
+#    1. lipid length
+#    2. small step
+
 lip_no = 300
 dimensions = 20
 T = 0.1
-N = 1000
+N = 300
 
 dir_step_size = 0.3
 noise_scale = 0.1
 infl_repulsion_heads = 0.2 
 detection_radius = 1.
-lipid_length = 0.4
+lipid_length = 0.5
 lip_len_scale = 0.
-min_tail_dist = 0.1
+min_tail_dist = 0.
 
 noise = norm.rvs(size=(2, lip_no, N)) * noise_scale
 
@@ -28,6 +36,12 @@ lip_heads = np.zeros((2, lip_no, N))
 lip_tails = np.zeros((2, lip_no, N))
 lip_lengths = norm.rvs(size=lip_no) * lip_len_scale + lipid_length
 
+out_dir = "plots_2point_ll_%s_dr_%s_ss_%s_noise_%s_taildist_%s_N_%s_color"%(lipid_length,detection_radius, dir_step_size,noise_scale,min_tail_dist, N )
+
+try:
+    os.mkdir(out_dir)
+except:
+    pass
 
 # maybe make sure the same rand. no is not chosen twise
 for i in range(lip_no):
@@ -60,8 +74,8 @@ def distance(pos, tails, heads):
     """
     pos: [tail.x, tail.y, head.x, head.y]
     """ 
-    return (np.sum(np.sum((tails.T - pos[:2])**2, axis=1)**0.5, axis=0)
-            - 0.5 * np.sum(np.sum((tails.T - pos[2:])**2, axis=1)**0.5, axis=0))
+    return (np.sum(np.sum((tails.T - pos[:2])**2, axis=1)**0.5, axis=0))
+           # - 0.5 * np.sum(np.sum((tails.T - pos[2:])**2, axis=1)**0.5, axis=0))
 
 
 def visualization(n, tails, heads):
@@ -69,10 +83,13 @@ def visualization(n, tails, heads):
     axes = plt.gca()
     axes.set_xlim([0,dimensions])
     axes.set_ylim([0,dimensions])
-    plt.plot([tails[0,:], heads[0,:]], [tails[1,:], heads[1,:]], 'k-')
+    #axes.patch.set_facecolor('lightskyblue')
+    #axes.patch.set_alpha(0.3)
+
+    plt.plot([tails[0,:], heads[0,:]], [tails[1,:], heads[1,:]], '-', color='darkgrey')
     for j in range(lip_no):
-        plt.plot(tails[0,j], tails[1,j], 'r.')
-    plt.savefig('plots/continuous_%03d.png'%(n))
+        plt.plot(heads[0,j], heads[1,j], 'b.')
+    plt.savefig(out_dir+'/continuous_%03d.png'%(n))
     #plt.show()
     plt.close(n)
 
@@ -91,12 +108,13 @@ for n in range(1, N):
                            args=(lip_tails[:, neighbours, n], lip_heads[:, neighbours, n]), options={"maxiter": 500},
                            constraints=({"type": "eq", "fun": dist_constraint, "args": (lip_lengths[i],)}, 
                                         {"type": "ineq", "fun": small_step_constraint, "args": masspoint},
-                                        {"type": "ineq", "fun": tails_constraint, "args": (lip_tails[:, neighbours, n],)}))
+                                       # {"type": "ineq", "fun": tails_constraint, "args": (lip_tails[:, neighbours, n],)}
+                                        ))
             new_pos = res.x
             cost = res.fun
         lip_tails[:, i, n] = np.clip(new_pos[:2] + noise[:, i, n], 1, dimensions-1)
         lip_heads[:, i, n] = np.clip(new_pos[2:] + noise[:, i, n], 1, dimensions-1)
-    print n
+    print(n)
     p = Process(target=visualization, args=(n, lip_tails[:, :, n], lip_heads[:, :, n]))
     p.start()
     p.join()
